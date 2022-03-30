@@ -4,6 +4,7 @@
 
 # Xcode
 #
+api-keys.js
 build/
 *.pbxuser
 !default.pbxuser
