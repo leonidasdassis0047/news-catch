@@ -3,13 +3,15 @@ import {newsClient, weatherClient} from './apiClients';
 // get the top headlines.
 export const getTopHeadlines = async function (params) {
   const newsResults = await newsClient.get('/latest_headlines', {
-    countries: 'us',
+    countries: 'ug',
+    lang: 'en',
   });
   if (!newsResults.ok) {
     // dispatch to redux to give an error to the client
-    return console.log(newsResults.problem);
+    console.log('Top headlines:', newsResults.problem);
+    return;
   }
-  //   console.log(newsResults.data.articles);
+
   return newsResults.data.articles;
 };
 
@@ -20,7 +22,7 @@ export const getLocalTopHeadlines = async function (params) {
   });
   if (!newsResults.ok) {
     // dispatch to redux to give an error to the client
-    return console.log('here', newsResults.problem);
+    return console.log('Local top headlines:', newsResults.problem);
   }
   //   console.log(newsResults.data.articles);
   return newsResults.data.articles;
@@ -32,7 +34,8 @@ export const searchNews = async function (searchQuery) {
 
   if (!results.ok) {
     // dispatch to redux to give an error to the client
-    return console.log(results.problem);
+    console.log(results.problem);
+    return;
   }
   if (results.data.status !== 'ok') {
     const err = {error: true, userSearch: results.data.user_input.q};
@@ -46,18 +49,20 @@ export const searchNews = async function (searchQuery) {
 // get the realtime current weather.
 export const getCurrentWeather = async function (query) {
   const results = await weatherClient.get('/current.json', {
-    q: '0.32,32.57',
-    // q: query,
+    // q: '0.32,32.57',
+    q: query,
   });
 
   if (!results.ok) {
     // dispatch to redux to give an error to the client
-    return console.log(results.problem);
+    console.log('weather call:', results.originalError);
+    return;
   }
 
-  console.log(results.data);
+  // console.log(results.data);
   return results.data;
 };
+
 const struct = {
   page: 0,
   page_size: 0,

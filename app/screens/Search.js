@@ -1,18 +1,23 @@
-import {FlatList, Image, StyleSheet, View} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import {FlatList, Keyboard, StyleSheet, View, Pressable} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {useNavigation} from '@react-navigation/native';
 
 import {Button, Screen, Text, TextInput} from '../components/common';
 import {Heading} from '../components/typography';
 import {RowContainer} from '../components/utils';
+import {ArticleCard} from '../components/articles';
 import colors from '../config/colors';
 import fonts from '../config/fonts';
 
 import {getLocalTopHeadlines, getTopHeadlines, searchNews} from '../api/index';
+import {saveArticle} from '../services';
 
 const Search = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchError, setSearchError] = useState({});
+
+  const navigation = useNavigation();
 
   const article_struct = {
     _id: '7ab48383771b2f472cd0104295fcea7d',
@@ -64,23 +69,14 @@ const Search = () => {
     queryForSearchedNews(searchQuery);
   };
 
-  const getNews = async function (q) {
-    const results = await getLocalTopHeadlines(q);
-    setSearchResults(results);
-  };
-
-  useEffect(() => {
-    // getNews({});
-
-    return () => {};
-  }, []);
-
   return (
     <Screen style={{paddingHorizontal: 0}}>
       {/* search box containing the search form */}
 
       <View style={styles.searchBox}>
-        <Heading style={{fontFamily: fonts.bold}}>Search Articles</Heading>
+        <Heading style={{fontFamily: fonts.bold, color: colors.primary}}>
+          Search News
+        </Heading>
         <RowContainer
           justifyContent="space-between"
           style={{marginVertical: 0}}>
@@ -88,13 +84,12 @@ const Search = () => {
             placeholder="Search news ..."
             inputStyle={styles.input}
             onChangeText={text => setSearchQuery(text)}
+            selectTextOnFocus
             style={styles.inputContainer}
-          />
-          <Button
-            title="Go"
-            onPress={handleSearchSubmit}
-            style={styles.searchButton}
-            textStyle={{fontSize: 15.6}}
+            // returnKeyType="search"
+            onSubmitEditing={event => {
+              handleSearchSubmit();
+            }}
           />
         </RowContainer>
         {searchError?.error && (
@@ -119,18 +114,17 @@ const Search = () => {
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <View
+          <Pressable
             style={{
               backgroundColor: colors.white,
               borderRadius: 8,
-              width: '90%',
-              height: '50%',
-              top: -90,
+              width: '100%',
+              flex: 1,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-            <Heading style={{color: colors.primary}}>No Search Results</Heading>
-          </View>
+            <Heading style={{color: colors.primary}}>Search Results</Heading>
+          </Pressable>
         </View>
       ) : (
         <FlatList
@@ -138,37 +132,13 @@ const Search = () => {
           keyExtractor={item => item._id.toString()}
           showsVerticalScrollIndicator={false}
           renderItem={({item}) => (
-            <View style={styles.articleContainer}>
-              <RowContainer
-                justifyContent="space-between"
-                style={{marginVertical: 0}}>
-                {/* article image comtainer */}
-                <View style={styles.imageContainer}>
-                  <Image
-                    resizeMode="cover"
-                    resizeMethod="scale"
-                    source={{uri: item.media}}
-                    style={styles.image}
-                  />
-                </View>
-                {/* ======== image comtainer ========== */}
-
-                {/* article text container */}
-                <View style={styles.textContainer}>
-                  <RowContainer
-                    justifyContent="space-between"
-                    style={{marginVertical: 0}}>
-                    <Text style={{fontFamily: fonts.medium}}>{item.topic}</Text>
-                    <Text style={{fontSize: 14}}>share</Text>
-                  </RowContainer>
-                  <Text style={{fontFamily: fonts.bold}} numberOfLines={3}>
-                    {item.title}
-                  </Text>
-                  <Text style={{fontSize: 14}}>{item.clean_url}</Text>
-                </View>
-                {/* ======== article text container ========= */}
-              </RowContainer>
-            </View>
+            <ArticleCard
+              article={item}
+              onPress={() =>
+                navigation.navigate('WebViewContent', {article: item})
+              }
+              handleSave={saveArticle}
+            />
           )}
         />
       )}
@@ -181,8 +151,8 @@ const Search = () => {
 export default Search;
 
 const styles = StyleSheet.create({
-  input: {paddingVertical: 4, paddingHorizontal: 8, fontSize: 15.6},
-  inputContainer: {borderRadius: 4, flex: 1, marginRight: 12},
+  input: {paddingVertical: 4, paddingHorizontal: 8, fontSize: 16},
+  inputContainer: {borderRadius: 18, flex: 1, backgroundColor: colors.white},
   searchBox: {
     backgroundColor: colors.white,
     borderBottomLeftRadius: 8,
@@ -191,23 +161,4 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   searchButton: {width: 'auto', paddingHorizontal: 12, paddingVertical: 4},
-  articleContainer: {
-    backgroundColor: colors.white,
-    marginBottom: 4,
-    paddingHorizontal: 4,
-    minHeight: 90,
-  },
-  image: {height: '100%', width: '100%'},
-  imageContainer: {
-    height: 80,
-    width: 80,
-    borderRadius: 4,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.light,
-
-    alignSelf: 'flex-start',
-    top: 8,
-  },
-  textContainer: {height: '100%', flex: 1, paddingLeft: 8},
 });

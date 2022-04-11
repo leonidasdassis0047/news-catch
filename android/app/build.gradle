@@ -196,7 +196,9 @@ dependencies {
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 
     implementation project(':react-native-location') // for react-native-location
-
+    implementation project(':react-native-webview')
+    implementation project(':@react-native-async-storage')
+    
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
         exclude group:'com.facebook.fbjni'
     }
